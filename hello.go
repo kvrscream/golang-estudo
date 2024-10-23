@@ -4,7 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
+
+const monitoramentos int = 3
+const delay = 5
 
 func main() { // Precisamos da func main para rodar o programa em GO
 	for { // Go não tem while. O for dessa forma seria a mesma coisa
@@ -53,13 +58,19 @@ func leComando() int {
 
 func monitoramento() {
 	fmt.Println("Monitorando...")
-	sites := []string{
-		"https://go.dev",
-		"https://www.infomoney.com.br"}
+	// sites := []string{
+	// 	"https://go.dev",
+	// 	"https://www.infomoney.com.br",
+	// 	"https://httpbin.org/status/200",
+	// 	"https://httpbin.org/status/400"}
 
-	for i := 0; i < len(sites); i++ {
-		fmt.Println(sites[i])
-		testaSite(sites[i])
+	sites := leSitesDoArquivo()
+
+	for i := 0; i < monitoramentos; i++ {
+		for i := 0; i < len(sites); i++ {
+			testaSite(sites[i])
+		}
+		time.Sleep(delay * time.Second)
 	}
 }
 
@@ -70,10 +81,22 @@ func testaSite(site string) {
 	// }
 
 	if resp.StatusCode == 200 {
-		fmt.Println("Site está rodando", resp.StatusCode, "Em: ")
+		fmt.Println("Site", site, " está rodando e retornou status: ", resp.StatusCode)
 	} else {
 		fmt.Println("Site", site, " não está rodando...")
 	}
 }
 
 func Logs() {}
+
+func leSitesDoArquivo() []string {
+	var sites []string
+	// file, err := os.Open("sites.txt") // Abrindo arquivo no sistema
+	file, err := os.ReadFile("sites.txt")
+	if err != nil {
+		fmt.Println("Um erro ocorreu", err)
+	}
+	// fmt.Println(strings.Split(string(file), "\n"))
+	sites = strings.Split(string(file), "\n")
+	return sites
+}
